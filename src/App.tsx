@@ -1,0 +1,78 @@
+import { Suspense, lazy } from "react";
+import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
+import Home from "./components/home";
+import routes from "tempo-routes";
+import AuthGuard from "./components/auth/AuthGuard";
+
+// Lazy load pages
+const LoginPage = lazy(() => import("./pages/login"));
+const AdminsPage = lazy(() => import("./pages/admins"));
+const FormsPage = lazy(() => import("./pages/forms"));
+const QuestionnairesPage = lazy(() => import("./pages/questionnaires"));
+const AnalyticsPage = lazy(() => import("./pages/analytics"));
+
+function App() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <p>Loading...</p>
+        </div>
+      }
+    >
+      <>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Protected routes */}
+          <Route
+            path="/"
+            element={
+              <AuthGuard>
+                <Home />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admins"
+            element={
+              <AuthGuard>
+                <AdminsPage />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/forms"
+            element={
+              <AuthGuard>
+                <FormsPage />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/questionnaires"
+            element={
+              <AuthGuard>
+                <QuestionnairesPage />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <AuthGuard>
+                <AnalyticsPage />
+              </AuthGuard>
+            }
+          />
+
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+      </>
+    </Suspense>
+  );
+}
+
+export default App;
