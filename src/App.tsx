@@ -3,6 +3,8 @@ import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
 import AuthGuard from "./components/auth/AuthGuard";
+import StudentPortalPage from "./pages/student";
+import StudentEvaluationPage from "./pages/student/evaluation";
 
 // Lazy load pages
 const LoginPage = lazy(() => import("./pages/login"));
@@ -64,6 +66,13 @@ function App() {
                 <AnalyticsPage />
               </AuthGuard>
             }
+          />
+
+          {/* Student routes */}
+          <Route path="/student" element={<StudentPortalPage />} />
+          <Route
+            path="/student/evaluation/:formId"
+            element={<StudentEvaluationPage />}
           />
 
           {/* Catch all route */}

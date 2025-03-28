@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StatisticsCard from "./StatisticsCard";
 import QuickAccessCard from "./QuickAccessCard";
 import { FileText, BarChart3, Users, Send, PlusCircle } from "lucide-react";
+import StudentEvaluationLink from "../student/StudentEvaluationLink";
 
 interface DashboardOverviewProps {
   statistics?: {
@@ -146,6 +147,15 @@ const DashboardOverview = ({
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Demo Link for Student Evaluation */}
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h3 className="text-lg font-medium mb-2">Demo Access</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Quick access to student evaluation demo for showcase purposes.
+        </p>
+        <StudentEvaluationLink />
       </div>
     </div>
   );
