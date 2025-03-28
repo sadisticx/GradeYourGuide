@@ -4,6 +4,8 @@ import DashboardLayout from "./layout/DashboardLayout";
 import DashboardOverview from "./dashboard/DashboardOverview";
 
 const Home = () => {
+  // Set page title
+  document.title = "Dashboard - Faculty Evaluation System";
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
 

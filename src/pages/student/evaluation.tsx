@@ -17,6 +17,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 
 const StudentEvaluationPage = () => {
+  // Set page title
+  document.title = "Faculty Evaluation Form";
   const navigate = useNavigate();
   const { formId } = useParams();
   const location = useLocation();
@@ -362,14 +364,56 @@ const StudentEvaluationPage = () => {
                     ))}
                   </RadioGroup>
                 ) : (
-                  <Textarea
-                    value={responses[question.id] || ""}
-                    onChange={(e) =>
-                      handleTextChange(question.id, e.target.value)
-                    }
-                    placeholder="Enter your response here"
-                    className="min-h-[100px]"
-                  />
+                  <div className="space-y-4">
+                    <Textarea
+                      value={responses[question.id] || ""}
+                      onChange={(e) =>
+                        handleTextChange(question.id, e.target.value)
+                      }
+                      placeholder="Enter your response here"
+                      className="min-h-[100px]"
+                    />
+                    <div className="mt-2">
+                      <p className="text-sm font-medium mb-2">
+                        How would you categorize your feedback?
+                      </p>
+                      <RadioGroup
+                        value={responses[`${question.id}_category`] || ""}
+                        onValueChange={(value) =>
+                          handleRatingChange(`${question.id}_category`, value)
+                        }
+                        className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="critical"
+                            id={`${question.id}_critical`}
+                          />
+                          <Label htmlFor={`${question.id}_critical`}>
+                            Mostly Critical
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="balanced"
+                            id={`${question.id}_balanced`}
+                          />
+                          <Label htmlFor={`${question.id}_balanced`}>
+                            Balanced Feedback
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="positive"
+                            id={`${question.id}_positive`}
+                          />
+                          <Label htmlFor={`${question.id}_positive`}>
+                            Mostly Positive
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  </div>
                 )}
               </div>
             ))}
