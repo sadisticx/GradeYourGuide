@@ -1,5 +1,8 @@
 
 # How to run this project?
+Note: Ensure you have Node.js installed on your system before executing these commands.
+```node -v npm -v```
+
 on Command Prompt:
 
 1. Clone the repository
@@ -15,7 +18,8 @@ on Command Prompt:
    ```npm run dev```
 
 5. Access the Application: Open your web browser and navigate to the local server address provided in the terminal, typically http://localhost:3000 or http://localhost:5173.
-<!--
+
+  <!--
 
 # React + TypeScript + Vite
 
