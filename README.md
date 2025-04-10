@@ -1,3 +1,26 @@
+
+# How to run this project?
+Note: Ensure you have Node.js installed on your system before executing these commands.
+```node -v npm -v```
+
+on Command Prompt:
+
+1. Clone the repository
+   ```git clone https://github.com/sadisticx/GradeYourGuide.git```
+   
+2. Navigate to the Project Directory:
+   ```cd GradeYourGuide```
+
+3. Install Dependencies:
+   ```npm install```
+
+4. Start the Development Server:
+   ```npm run dev```
+
+5. Access the Application: Open your web browser and navigate to the local server address provided in the terminal, typically http://localhost:3000 or http://localhost:5173.
+
+  <!--
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -28,3 +51,5 @@ export default {
 - Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
 - Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
 - Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+
+-->
