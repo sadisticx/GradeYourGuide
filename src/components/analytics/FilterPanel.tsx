@@ -15,6 +15,7 @@ import DatePickerWithRange from "@/components/ui/date-picker-with-range";
 interface FilterPanelProps {
   onFilterChange?: (filters: FilterState) => void;
   className?: string;
+  isLoading?: boolean;
 }
 
 interface FilterState {
@@ -33,6 +34,7 @@ interface FilterState {
 const FilterPanel = ({
   onFilterChange,
   className = "",
+  isLoading = false,
 }: FilterPanelProps = {}) => {
   const [filters, setFilters] = useState<FilterState>({
     section: "all-sections",
@@ -81,7 +83,13 @@ const FilterPanel = ({
 
   return (
     <div className={`bg-white p-4 rounded-lg shadow-sm border ${className}`}>
-      <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-end md:space-x-4">
+      {isLoading ? (
+        <div className="flex justify-center items-center py-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+          <span className="ml-3">Loading filters...</span>
+        </div>
+      ) : (
+        <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-end md:space-x-4">
         <div className="space-y-2 w-full md:w-1/5">
           <Label htmlFor="section">Section</Label>
           <Select
@@ -157,14 +165,15 @@ const FilterPanel = ({
         </div>
 
         <div className="flex space-x-2 w-full md:w-auto">
-          <Button variant="outline" size="icon" onClick={handleReset}>
+          <Button variant="outline" size="icon" onClick={handleReset} disabled={isLoading}>
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button>
+          <Button disabled={isLoading}>
             <Filter className="mr-2 h-4 w-4" />
             Apply Filters
           </Button>
         </div>
+      )
       </div>
 
       <div className="mt-4">

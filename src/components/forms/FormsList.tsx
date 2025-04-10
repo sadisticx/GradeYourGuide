@@ -59,47 +59,18 @@ interface FormsListProps {
   onEditForm?: (id: string) => void;
   onViewForm?: (id: string) => void;
   onCopyLink?: (id: string) => void;
+  isLoading?: boolean;
 }
 
 const FormsList = ({
-  forms = [
-    {
-      id: "1",
-      title: "End of Semester Evaluation",
-      questionnaire: "Standard Faculty Evaluation",
-      section: "CS101-A",
-      status: "active",
-      responses: 24,
-      createdAt: new Date("2023-09-01"),
-      expiresAt: new Date("2023-12-15"),
-    },
-    {
-      id: "2",
-      title: "Mid-term Feedback",
-      questionnaire: "Quick Feedback Form",
-      section: "MATH202-B",
-      status: "inactive",
-      responses: 18,
-      createdAt: new Date("2023-08-15"),
-      expiresAt: new Date("2023-10-01"),
-    },
-    {
-      id: "3",
-      title: "Teaching Assistant Evaluation",
-      questionnaire: "TA Performance Review",
-      section: "PHYS303-C",
-      status: "active",
-      responses: 12,
-      createdAt: new Date("2023-09-10"),
-      expiresAt: new Date("2023-11-30"),
-    },
-  ] as FormData[],
+  forms = [],
   onActivateForm = () => {},
   onDeactivateForm = () => {},
   onDeleteForm = () => {},
   onEditForm = () => {},
   onViewForm = () => {},
   onCopyLink = () => {},
+  isLoading = false,
 }: FormsListProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
@@ -163,84 +134,118 @@ const FormsList = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {forms.map((form) => (
-              <TableRow key={form.id}>
-                <TableCell className="font-medium">{form.title}</TableCell>
-                <TableCell>{form.questionnaire}</TableCell>
-                <TableCell>{form.section}</TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={form.status === "active"}
-                      onCheckedChange={() =>
-                        handleStatusChange(form.id, form.status)
-                      }
-                    />
-                    <Badge
-                      variant={
-                        form.status === "active" ? "default" : "secondary"
-                      }
-                    >
-                      {form.status === "active" ? "Active" : "Inactive"}
-                    </Badge>
-                  </div>
-                </TableCell>
-                <TableCell>{form.responses}</TableCell>
-                <TableCell>{format(form.createdAt, "MMM d, yyyy")}</TableCell>
-                <TableCell>{format(form.expiresAt, "MMM d, yyyy")}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onViewForm(form.id)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onCopyLink(form.id)}>
-                        <Link className="mr-2 h-4 w-4" />
-                        Copy Link
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEditForm(form.id)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit Form
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      {form.status === "active" ? (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleStatusChange(form.id, form.status)
-                          }
-                        >
-                          <PowerOff className="mr-2 h-4 w-4" />
-                          Deactivate
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleStatusChange(form.id, form.status)
-                          }
-                        >
-                          <Power className="mr-2 h-4 w-4" />
-                          Activate
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => handleDeleteClick(form.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={8}
+                  className="text-center py-6 text-muted-foreground"
+                >
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2">Loading forms...</p>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : forms.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={8}
+                  className="text-center py-6 text-muted-foreground"
+                >
+                  <div className="flex flex-col items-center justify-center p-8">
+                    <p className="mb-2 text-lg font-semibold">No forms found</p>
+                    <p className="mb-6 text-sm text-gray-500">
+                      Create your first form to get started
+                    </p>
+                    <Button
+                      onClick={() =>
+                        document.querySelector("button:has(.Plus)")?.click()
+                      }
+                      className="mt-2"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> Create New Form
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              forms.map((form) => (
+                <TableRow key={form.id}>
+                  <TableCell className="font-medium">{form.title}</TableCell>
+                  <TableCell>{form.questionnaire}</TableCell>
+                  <TableCell>{form.section}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={form.status === "active"}
+                        onCheckedChange={() =>
+                          handleStatusChange(form.id, form.status)
+                        }
+                      />
+                      <Badge
+                        variant={
+                          form.status === "active" ? "default" : "secondary"
+                        }
+                      >
+                        {form.status === "active" ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>{form.responses}</TableCell>
+                  <TableCell>{format(form.createdAt, "MMM d, yyyy")}</TableCell>
+                  <TableCell>{format(form.expiresAt, "MMM d, yyyy")}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onViewForm(form.id)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onCopyLink(form.id)}>
+                          <Link className="mr-2 h-4 w-4" />
+                          Copy Link
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEditForm(form.id)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Form
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {form.status === "active" ? (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleStatusChange(form.id, form.status)
+                            }
+                          >
+                            <PowerOff className="mr-2 h-4 w-4" />
+                            Deactivate
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleStatusChange(form.id, form.status)
+                            }
+                          >
+                            <Power className="mr-2 h-4 w-4" />
+                            Activate
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => handleDeleteClick(form.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

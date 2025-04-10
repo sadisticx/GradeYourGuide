@@ -51,6 +51,7 @@ interface AdminListProps {
   onDelete?: (admin: Admin) => void;
   onResetPassword?: (admin: Admin) => void;
   onDeactivate?: (admin: Admin) => void;
+  isLoading?: boolean;
 }
 
 const AdminList = ({
@@ -59,6 +60,7 @@ const AdminList = ({
   onDelete = () => {},
   onResetPassword = () => {},
   onDeactivate = () => {},
+  isLoading = false,
 }: AdminListProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
@@ -125,75 +127,121 @@ const AdminList = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {admins.map((admin) => (
-            <TableRow key={admin.id}>
-              <TableCell className="font-medium">{admin.name}</TableCell>
-              <TableCell>{admin.email}</TableCell>
-              <TableCell>{admin.role}</TableCell>
-              <TableCell>
-                <Badge
-                  variant={admin.status === "active" ? "default" : "secondary"}
-                  className={
-                    admin.status === "active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }
-                >
-                  {admin.status === "active" ? "Active" : "Inactive"}
-                </Badge>
-              </TableCell>
-              <TableCell>{formatDate(admin.lastLogin)}</TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {admin.permissions.map((permission, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {permission.split("_").join(" ")}
-                    </Badge>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => onEdit(admin)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onResetPassword(admin)}>
-                      <Lock className="mr-2 h-4 w-4" />
-                      Reset Password
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => onDeactivate(admin)}
-                      className={
-                        admin.status === "active"
-                          ? "text-amber-600"
-                          : "text-green-600"
-                      }
-                    >
-                      <UserX className="mr-2 h-4 w-4" />
-                      {admin.status === "active" ? "Deactivate" : "Activate"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleDeleteClick(admin)}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+          {isLoading ? (
+            <TableRow>
+              <TableCell
+                colSpan={7}
+                className="text-center py-6 text-muted-foreground"
+              >
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
+                <p className="mt-2">Loading admin accounts...</p>
               </TableCell>
             </TableRow>
-          ))}
+          ) : admins.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={7}
+                className="text-center py-6 text-muted-foreground"
+              >
+                <div className="flex flex-col items-center justify-center p-8">
+                  <p className="mb-2 text-lg font-semibold">
+                    No admin accounts found
+                  </p>
+                  <p className="mb-6 text-sm text-gray-500">
+                    Add your first admin account to get started
+                  </p>
+                  <Button
+                    onClick={() =>
+                      onEdit({
+                        id: "",
+                        name: "",
+                        email: "",
+                        role: "",
+                        status: "active",
+                        lastLogin: "",
+                        permissions: [],
+                      })
+                    }
+                    className="mt-2"
+                  >
+                    <UserPlus className="mr-2 h-4 w-4" /> Add New Admin
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            admins.map((admin) => (
+              <TableRow key={admin.id}>
+                <TableCell className="font-medium">{admin.name}</TableCell>
+                <TableCell>{admin.email}</TableCell>
+                <TableCell>{admin.role}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      admin.status === "active" ? "default" : "secondary"
+                    }
+                    className={
+                      admin.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
+                    }
+                  >
+                    {admin.status === "active" ? "Active" : "Inactive"}
+                  </Badge>
+                </TableCell>
+                <TableCell>{formatDate(admin.lastLogin)}</TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {admin.permissions.map((permission, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {permission.split("_").join(" ")}
+                      </Badge>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => onEdit(admin)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onResetPassword(admin)}>
+                        <Lock className="mr-2 h-4 w-4" />
+                        Reset Password
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => onDeactivate(admin)}
+                        className={
+                          admin.status === "active"
+                            ? "text-amber-600"
+                            : "text-green-600"
+                        }
+                      >
+                        <UserX className="mr-2 h-4 w-4" />
+                        {admin.status === "active" ? "Deactivate" : "Activate"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteClick(admin)}
+                        className="text-red-600"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
 

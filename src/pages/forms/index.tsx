@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { fetchData, insertData, updateData, deleteData } from "@/lib/supabase";
+import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -16,12 +18,54 @@ import FormsList from "@/components/forms/FormsList";
 import FormCreator from "@/components/forms/FormCreator";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import BackButton from "@/components/ui/back-button";
 
 const FormsPage = () => {
   const [activeTab, setActiveTab] = useState("list");
   const [showFormCreator, setShowFormCreator] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  const [forms, setForms] = useState([
+  const [forms, setForms] = useState<any[]>([]);
+  const [archivedForms, setArchivedForms] = useState<any[]>([]);
+  
+  // Fetch forms from Supabase
+  useEffect(() => {
+    const loadForms = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchData('forms');
+        
+        // Format the data and separate active and archived forms
+        const formattedData = data.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          questionnaire: item.questionnaire_id, // This should be replaced with the actual questionnaire title in a real app
+          section: item.section,
+          status: item.status || 'inactive',
+          responses: item.responses || 0,
+          createdAt: new Date(item.created_at),
+          expiresAt: item.expires_at ? new Date(item.expires_at) : new Date()
+        }));
+        
+        // Split into active and archived forms
+        setForms(formattedData.filter(form => form.status === 'active'));
+        setArchivedForms(formattedData.filter(form => form.status === 'inactive'));
+        
+        toast({
+          title: "Success",
+          description: "Forms loaded successfully"
+        });
+      } catch (error) {
+        console.error('Error loading forms:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load forms. Please try again later.",
+          variant: "destructive"
+        });
+        
+        // Set default forms for demo if loading fails
+        setForms([
     {
       id: "1",
       title: "End of Semester Evaluation",
@@ -54,7 +98,15 @@ const FormsPage = () => {
     },
   ]);
 
-  const [archivedForms, setArchivedForms] = useState([
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadForms();
+  }, [toast]);
+  
+  // Default archived forms for fallback
     {
       id: "4",
       title: "Previous Semester Evaluation",
@@ -82,31 +134,80 @@ const FormsPage = () => {
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState("");
 
-  const handleActivateForm = (id: string) => {
-    setForms(
-      forms.map((form) => {
-        if (form.id === id) {
-          return { ...form, status: "active" };
-        }
-        return form;
-      }),
-    );
+  const handleActivateForm = async (id: string) => {
+    try {
+      await updateData('forms', id, { status: 'active' });
+      
+      // Find the form in archived forms
+      const formToActivate = archivedForms.find(form => form.id === id);
+      if (formToActivate) {
+        // Update local state
+        const updatedForm = { ...formToActivate, status: 'active' };
+        setForms([...forms, updatedForm]);
+        setArchivedForms(archivedForms.filter(form => form.id !== id));
+        
+        toast({
+          title: "Success",
+          description: "Form activated successfully"
+        });
+      }
+    } catch (error) {
+      console.error('Error activating form:', error);
+      toast({
+        title: "Error",
+        description: "Failed to activate form. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeactivateForm = (id: string) => {
-    setForms(
-      forms.map((form) => {
-        if (form.id === id) {
-          return { ...form, status: "inactive" };
-        }
-        return form;
-      }),
-    );
+  const handleDeactivateForm = async (id: string) => {
+    try {
+      await updateData('forms', id, { status: 'inactive' });
+      
+      // Find the form in active forms
+      const formToDeactivate = forms.find(form => form.id === id);
+      if (formToDeactivate) {
+        // Update local state
+        const updatedForm = { ...formToDeactivate, status: 'inactive' };
+        setArchivedForms([...archivedForms, updatedForm]);
+        setForms(forms.filter(form => form.id !== id));
+        
+        toast({
+          title: "Success",
+          description: "Form deactivated successfully"
+        });
+      }
+    } catch (error) {
+      console.error('Error deactivating form:', error);
+      toast({
+        title: "Error",
+        description: "Failed to deactivate form. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteForm = (id: string) => {
-    setForms(forms.filter((form) => form.id !== id));
-    setArchivedForms(archivedForms.filter((form) => form.id !== id));
+  const handleDeleteForm = async (id: string) => {
+    try {
+      await deleteData('forms', id);
+      
+      // Update local state
+      setForms(forms.filter(form => form.id !== id));
+      setArchivedForms(archivedForms.filter(form => form.id !== id));
+      
+      toast({
+        title: "Success",
+        description: "Form deleted successfully"
+      });
+    } catch (error) {
+      console.error('Error deleting form:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete form. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEditForm = (id: string) => {
@@ -143,35 +244,93 @@ const FormsPage = () => {
     }
   };
 
-  const handleFormSubmit = (data: any) => {
-    const newForm = {
-      id: selectedForm ? selectedForm.id : Date.now().toString(),
-      title: data.title || `Evaluation Form ${forms.length + 1}`,
-      questionnaire: data.questionnaire,
-      section: data.section,
-      status: data.isActive ? "active" : ("inactive" as const),
-      responses: selectedForm ? selectedForm.responses : 0,
-      createdAt: selectedForm ? selectedForm.createdAt : new Date(),
-      expiresAt: data.endDate,
-    };
-
-    if (selectedForm) {
-      // Update existing form
-      setForms(
-        forms.map((form) => (form.id === selectedForm.id ? newForm : form)),
-      );
-    } else {
-      // Add new form
-      setForms([...forms, newForm]);
+  const handleFormSubmit = async (data: any) => {
+    try {
+      setIsLoading(true);
+      
+      const formData = {
+        title: data.title || `Evaluation Form ${forms.length + 1}`,
+        questionnaire_id: data.questionnaire,
+        section: data.section,
+        status: data.isActive ? "active" : "inactive",
+        expires_at: data.endDate?.toISOString()
+      };
+      
+      if (selectedForm) {
+        // Update existing form
+        await updateData('forms', selectedForm.id, formData);
+        
+        const updatedForm = {
+          ...selectedForm,
+          ...{
+            title: data.title,
+            questionnaire: data.questionnaire,
+            section: data.section,
+            status: data.isActive ? "active" : "inactive",
+            expiresAt: data.endDate
+          }
+        };
+        
+        // Update local state based on status
+        if (data.isActive) {
+          setForms(forms.map(form => form.id === selectedForm.id ? updatedForm : form));
+          setArchivedForms(archivedForms.filter(form => form.id !== selectedForm.id));
+        } else {
+          setArchivedForms(archivedForms.map(form => form.id === selectedForm.id ? updatedForm : form));
+          setForms(forms.filter(form => form.id !== selectedForm.id));
+        }
+        
+        toast({
+          title: "Success",
+          description: "Form updated successfully"
+        });
+      } else {
+        // Add new form
+        const result = await insertData('forms', formData);
+        
+        if (result && result.length > 0) {
+          const newForm = {
+            id: result[0].id,
+            title: data.title || `Evaluation Form ${forms.length + 1}`,
+            questionnaire: data.questionnaire,
+            section: data.section,
+            status: data.isActive ? "active" : "inactive",
+            responses: 0,
+            createdAt: new Date(),
+            expiresAt: data.endDate
+          };
+          
+          // Add to appropriate list based on status
+          if (data.isActive) {
+            setForms([...forms, newForm]);
+          } else {
+            setArchivedForms([...archivedForms, newForm]);
+          }
+          
+          toast({
+            title: "Success",
+            description: "New form created successfully"
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error saving form:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save form. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+      setSelectedForm(null);
+      setShowFormCreator(false);
+      setActiveTab("list");
     }
-
-    setSelectedForm(null);
-    setShowFormCreator(false);
-    setActiveTab("list");
   };
 
   return (
     <div className="container mx-auto py-8 px-4 bg-gray-50 min-h-screen">
+      <BackButton toDashboard className="mb-4" />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Form Distribution</h1>
         {activeTab === "list" && !showFormCreator && (
@@ -203,6 +362,7 @@ const FormsPage = () => {
               onEditForm={handleEditForm}
               onViewForm={handleViewForm}
               onCopyLink={handleCopyLink}
+              isLoading={isLoading}
             />
           </TabsContent>
 
@@ -213,6 +373,7 @@ const FormsPage = () => {
               onDeleteForm={handleDeleteForm}
               onViewForm={handleViewForm}
               onCopyLink={handleCopyLink}
+              isLoading={isLoading}
             />
           </TabsContent>
         </Tabs>

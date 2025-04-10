@@ -64,109 +64,16 @@ interface QuestionnaireListProps {
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onCreate?: () => void;
+  isLoading?: boolean;
 }
 
 const QuestionnaireList: React.FC<QuestionnaireListProps> = ({
-  questionnaires = [
-    {
-      id: "1",
-      title: "End of Semester Evaluation",
-      description: "Standard evaluation form for end of semester feedback",
-      sections: [
-        {
-          id: "s1",
-          title: "Teaching Quality",
-          questions: [
-            {
-              id: "q1",
-              text: "How would you rate the overall teaching quality?",
-              type: "rating",
-            },
-            {
-              id: "q2",
-              text: "What aspects of teaching could be improved?",
-              type: "qualitative",
-            },
-          ],
-        },
-        {
-          id: "s2",
-          title: "Course Content",
-          questions: [
-            {
-              id: "q3",
-              text: "Was the course content relevant to your learning goals?",
-              type: "rating",
-            },
-            {
-              id: "q4",
-              text: "What topics would you like to see added or removed?",
-              type: "qualitative",
-            },
-          ],
-        },
-      ],
-      status: "active",
-      createdAt: new Date(2023, 5, 15),
-      updatedAt: new Date(2023, 6, 1),
-    },
-    {
-      id: "2",
-      title: "Mid-Term Feedback Form",
-      description: "Quick feedback collection halfway through the semester",
-      sections: [
-        {
-          id: "s1",
-          title: "Course Progress",
-          questions: [
-            {
-              id: "q1",
-              text: "How would you rate your understanding of the material so far?",
-              type: "rating",
-            },
-            {
-              id: "q2",
-              text: "What areas do you need more clarification on?",
-              type: "qualitative",
-            },
-          ],
-        },
-      ],
-      status: "draft",
-      createdAt: new Date(2023, 7, 10),
-      updatedAt: new Date(2023, 7, 10),
-    },
-    {
-      id: "3",
-      title: "Teaching Assistant Evaluation",
-      description: "Form for evaluating teaching assistants",
-      sections: [
-        {
-          id: "s1",
-          title: "TA Performance",
-          questions: [
-            {
-              id: "q1",
-              text: "How helpful was the TA during lab sessions?",
-              type: "rating",
-            },
-            {
-              id: "q2",
-              text: "How clear were the TA's explanations?",
-              type: "rating",
-            },
-          ],
-        },
-      ],
-      status: "archived",
-      createdAt: new Date(2023, 2, 5),
-      updatedAt: new Date(2023, 5, 20),
-    },
-  ],
+  questionnaires = [],
   onView = () => {},
   onEdit = () => {},
   onDelete = () => {},
   onCreate = () => {},
+  isLoading = false,
 }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedQuestionnaire, setSelectedQuestionnaire] =
@@ -221,13 +128,32 @@ const QuestionnaireList: React.FC<QuestionnaireListProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {questionnaires.length === 0 ? (
+            {isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={7}
                   className="text-center py-6 text-muted-foreground"
                 >
-                  No questionnaires found. Create your first one!
+                  Loading questionnaires...
+                </TableCell>
+              </TableRow>
+            ) : questionnaires.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="text-center py-6 text-muted-foreground"
+                >
+                  <div className="flex flex-col items-center justify-center p-8">
+                    <p className="mb-2 text-lg font-semibold">
+                      No questionnaires found
+                    </p>
+                    <p className="mb-6 text-sm text-gray-500">
+                      Create your first questionnaire to get started
+                    </p>
+                    <Button onClick={onCreate} className="mt-2">
+                      <Plus className="mr-2 h-4 w-4" /> Create New Questionnaire
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
